@@ -1,0 +1,30 @@
+# Python bytecode/cache
+__pycache__/
+*.py[cod]
+
+# PyInstaller build artifacts
+build/
+dist/
+*.spec
+*.manifest
+*.exe
+
+# Personal assets
+assets/*.png
+assets/*.ico
+
+# Local build scripts/logs
+build_script.*
+*.log
+
+# VS Code workspace/settings
+.vscode/
+*.code-workspace
+
+# ensitive or machine-specific config
+libs/config.ini
+*.env
+
+# OS files
+Thumbs.db
+.DS_Store
