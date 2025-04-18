@@ -163,36 +163,27 @@ def show_splash():
     except:
         tk.Label(splash, text="HoonyTools Launcher", font=("Arial", 18, "bold")).pack(pady=(40, 10))
 
-    # === Created by hoonywise (fade-in text) ===
-    creator_label = tk.Label(splash, text="Created by hoonywise", font=("Arial", 10, "italic"), fg="#000000")
+    # === Created by hoonywise ===
+    creator_label = tk.Label(splash, text="Created by hoonywise", font=("Arial", 10, "italic"), fg="#444444")
     creator_label.pack(side="bottom", pady=20)
+    license_label = tk.Label(splash, text="For enterprise use, contact: hoonywise@proton.me", font=("Arial", 8, "italic"), fg="#444444")
+    license_label.pack(side="bottom", pady=(0, 5))    
     creator_label.attributes = {"opacity_step": 0}
 
-    def fade_in_creator_text():
-        step = creator_label.attributes["opacity_step"]
-        if step <= 20:
-            gray_level = int(255 * (step / 20))
-            hex_color = f"#{gray_level:02x}{gray_level:02x}{gray_level:02x}"
-            creator_label.config(fg=hex_color)
-            creator_label.attributes["opacity_step"] += 1
-            splash.after(50, fade_in_creator_text)
-
-    # === Fade in, hold, fade out ===
     def fade_in(alpha=0.0):
         if alpha < 1.0:
             splash.attributes('-alpha', alpha)
             splash.after(30, lambda: fade_in(alpha + 0.05))
         else:
-            fade_in_creator_text()  # trigger creator label fade separately
-            splash.after(1400, fade_out)
+            splash.after(3000, fade_out)  # hold full splash (logo + labels) for 3s
 
     def fade_out(alpha=1.0):
         if alpha > 0.0:
             splash.attributes('-alpha', alpha)
-            splash.after(30, lambda: fade_out(alpha - 0.05))
+            splash.after(14, lambda: fade_out(alpha - 0.7))
         else:
             splash.destroy()
-
+            
     fade_in()
     splash.mainloop()
 
