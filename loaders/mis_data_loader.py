@@ -6,6 +6,7 @@ from pathlib import Path
 from libs import abort_manager
 from config import PROJECT_PATH as BASE_PATH
 from config import PROJECT_PATH as base_path
+from libs.table_utils import create_index_if_columns_exist
 
 # Logging setup
 logger = logging.getLogger(__name__)
@@ -488,7 +489,13 @@ def load_to_oracle(df, table_name, annual_code, conn, cursor):
     exists = cursor.fetchone()[0] > 0
 
     if not exists:
-        columns = ', '.join([f'{col.upper()} VARCHAR2(4000)' for col in df.columns])
+        columns = ', '.join([
+            f'{col.upper()} VARCHAR2(2)' if col.upper() == 'GI90_RECORD_CODE' else
+            f'{col.upper()} VARCHAR2(3)' if col.upper() in ['GI01_DISTRICT_COLLEGE_ID', 'GI03_TERM_ID'] else
+            f'{col.upper()} VARCHAR2(10)' if col.upper() == 'SB00_STUDENT_ID' else
+            f'{col.upper()} VARCHAR2(4000)'
+            for col in df.columns
+        ])
         create_sql = f'CREATE TABLE DWH.{table_name.upper()} ({columns})'
         try:
             cursor.execute(create_sql)
@@ -498,6 +505,9 @@ def load_to_oracle(df, table_name, annual_code, conn, cursor):
         except Exception as e:
             logger.error(f"❌ Failed to create table {table_name}: {e}")
             return False
+
+    # ✅ Always try to create the index, whether or not table existed
+    create_index_if_columns_exist(cursor, "DWH", table_name, ["GI90_RECORD_CODE", "GI01_DISTRICT_COLLEGE_ID", "GI03_TERM_ID"])
 
     if 'GI03_TERM_ID' in df.columns:
         cursor.execute(f'DELETE FROM DWH.{table_name.upper()} WHERE GI03_TERM_ID = :1', [annual_code])

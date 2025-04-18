@@ -8,6 +8,7 @@ import logging
 from libs.oracle_db_connector import get_db_connection
 from pathlib import Path
 from libs import abort_manager
+from libs.table_utils import create_index_if_columns_exist
 
 # Configuration
 from config import PROJECT_PATH as base_path
@@ -67,9 +68,13 @@ def load_data_to_db(table_name, acyr, datestamp, df, conn, cursor):
     df['ACYR'] = acyr
     df['DATESTAMP'] = datestamp
     table_name = f'SCFF_{table_name}'
-
-    if not table_exists(cursor, table_name):
-        create_table_query = f'CREATE TABLE DWH.{table_name.upper()} ({', '.join([f'"{col}" VARCHAR2(4000)' for col in df.columns])})'
+    table_needs_create = not table_exists(cursor, table_name)
+    if table_needs_create:
+        create_table_query = f'CREATE TABLE DWH.{table_name.upper()} ({", ".join([
+            f'"{col}" VARCHAR2(10)' if col.upper() == "STUDENT_ID" else
+            f'"{col}" VARCHAR2(4)' if col.upper() == "ACYR" else
+            f'"{col}" VARCHAR2(4000)' for col in df.columns
+        ])})'
         try:
             cursor.execute(create_table_query)
             cursor.execute(f'GRANT SELECT ON DWH.{table_name.upper()} TO PUBLIC')
@@ -77,6 +82,9 @@ def load_data_to_db(table_name, acyr, datestamp, df, conn, cursor):
             logger.info(f'Table {table_name} created and granted SELECT to PUBLIC.')
         except oracledb.DatabaseError as e:
             logger.error(f'Error creating table {table_name}: {e}')
+
+    # ✅ Always attempt to create index (safely handles duplicates)
+    create_index_if_columns_exist(cursor, "DWH", table_name, ["STUDENT_ID", "ACYR"])
 
     delete_query = f'DELETE FROM DWH.{table_name.upper()} WHERE ACYR = :1'
     cursor.execute(delete_query, [acyr])
@@ -127,14 +135,21 @@ def run_scff_loader(existing_conn=None):
     from libs import abort_manager
     abort_manager.reset()
 
-    aid_years = [d for d in os.listdir(data_path) if os.path.isdir(os.path.join(data_path, d))]
-    for acyr in aid_years:
+    academic_years = [d for d in os.listdir(data_path) if os.path.isdir(os.path.join(data_path, d))]
+    for academic_year in academic_years:
         if abort_manager.should_abort:
             logger.warning("⏹️ SCFF Loader aborted by user.")
             break
-        latest_path = os.path.join(data_path, acyr, 'Latest')
+
+        try:
+            acyr = str(2000 + int(academic_year[:2]))
+        except Exception:
+            logger.warning(f"⚠️ Could not derive ACYR from folder name '{academic_year}'. Skipping.")
+            continue
+
+        latest_path = os.path.join(data_path, academic_year, 'Latest')
         if os.path.exists(latest_path):
-            logger.info(f'Loading data from Latest folder for aid year: {acyr}')
+            logger.info(f'Loading data from Latest folder for academic year: {academic_year}, derived ACYR: {acyr}')
             success = process_latest_files(latest_path, acyr, conn, cursor)
             if success:
                 conn.commit()
@@ -143,7 +158,7 @@ def run_scff_loader(existing_conn=None):
                 logger.warning(f"⏪ Rolled back records for ACYR {acyr}")
                 break
         else:
-            logger.error(f'No Latest folder found for aid year: {acyr}')
+            logger.error(f'No Latest folder found for academic year: {academic_year}')
 
     try:
         cursor.close()
@@ -156,5 +171,3 @@ def run_scff_loader(existing_conn=None):
     except Exception as e:
         if "DPY-1001" not in str(e):
             logger.warning(f"⚠️ Failed to close connection: {e}")
-
-

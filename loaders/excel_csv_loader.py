@@ -5,6 +5,7 @@ import logging
 from tkinter import Tk, filedialog, simpledialog, Toplevel, Label, Checkbutton, IntVar, Button, Entry
 import sys
 from pathlib import Path
+from libs.table_utils import create_index_if_columns_exist
 
 # Add path to shared connector
 from config import PROJECT_PATH as base_path
@@ -88,11 +89,19 @@ def drop_table_if_exists(cursor, schema, table_name):
 
 # ==== CREATE TABLE ====
 def create_table(cursor, schema, table_name, df):
-    cols_sql = ', '.join([f'"{col}" VARCHAR2(4000)' for col in df.columns])
+    cols_sql = ', '.join([
+        f'"{col}" VARCHAR2(10)' if col.upper() in ['PIDM', 'STUDENT_ID'] else
+        f'"{col}" VARCHAR2(6)' if col.upper() == 'TERM' else
+        f'"{col}" VARCHAR2(4000)'
+        for col in df.columns
+    ])
     cursor.execute(f'CREATE TABLE {schema}.{table_name.upper()} ({cols_sql})')
     cursor.execute(f'GRANT SELECT ON {schema}.{table_name.upper()} TO PUBLIC')
     abort_manager.register_created_table(table_name)
     logger.info(f"✅ Created table and granted SELECT to PUBLIC: {schema}.{table_name}")
+    
+    # ==== CREATE INDEX IF COLUMNS EXIST ====
+    create_index_if_columns_exist(cursor, schema, table_name, ["PIDM", "TERM", "STUDENT_ID"])
 
 # ==== INSERT DATA ====
 def insert_data(cursor, schema, table_name, df, conn):
@@ -141,7 +150,12 @@ def select_sheets_gui(file, sheets):
     top.title(f"Select Sheets: {os.path.basename(file)}")
     center_window(top, 500, 600)
 
-    Label(top, text="Select sheets to load and rename tables:").pack(pady=5)
+    Label(
+        top,
+        text="🔍 Columns named PIDM, TERM, and STUDENT_ID will be indexed (if present)",
+        font=("Arial", 9),
+        fg="gray"
+    ).pack(pady=(0, 10))
 
     # Top-aligned buttons
     btn_frame = Frame(top)
@@ -221,8 +235,16 @@ def load_multiple_files():
             if file_path.endswith('.csv'):
                 try:
                     df = pd.read_csv(file_path)
-                    df = clean_column_names(df).astype(str).fillna('')
+                    df = clean_column_names(df)
+                    # Strip file prefix from column names if accidentally included
+                    file_prefix = file_name
+                    df.columns = [col.replace(f"{file_prefix}_", "") for col in df.columns]
+                    df = df.astype(str).fillna('')
                     table_name = file_name
+                    from tkinter.simpledialog import askstring
+                    override = askstring("Rename Table", f"Default table name is '{table_name}'. Enter a new name or leave blank:")
+                    if override and override.strip():
+                        table_name = override.strip().replace('-', '_').replace(' ', '_').upper()                    
                     drop_table_if_exists(cursor, schema, table_name)
                     create_table(cursor, schema, table_name, df)
                     success = insert_data(cursor, schema, table_name, df, conn)

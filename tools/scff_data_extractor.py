@@ -18,7 +18,7 @@ data_path = base_path / "SCFF" / "SCFF_Data"
 logger = logging.getLogger(__name__)
 
 # Step 1: Extract aid year and date from the ZIP file contents
-def get_aid_year_and_date(zip_file):
+def get_academic_year_and_date(zip_file):
     with zipfile.ZipFile(zip_file, 'r') as zip_ref:
         for name in zip_ref.namelist():
             match = re.search(r'_(\d{4})_(\d{6})', name)
@@ -27,8 +27,8 @@ def get_aid_year_and_date(zip_file):
     return 'unknown', '000000'
 
 # Step 2: Ensure the folder structure exists
-def ensure_folders(aid_year):
-    year_path = data_path / aid_year
+def ensure_folders(academic_year):
+    year_path = data_path / academic_year
     latest_path = year_path / 'Latest'
     archive_path = year_path / 'Archive'
     os.makedirs(latest_path, exist_ok=True)
@@ -71,8 +71,8 @@ def extract_latest_zip():
         logger.info("No SCFF ZIP file found in Downloads.")
         return
 
-    aid_year, new_date = get_aid_year_and_date(zip_file)
-    latest_path, archive_path = ensure_folders(aid_year)
+    academic_year, new_date = get_academic_year_and_date(zip_file)
+    latest_path, archive_path = ensure_folders(academic_year)
 
     with zipfile.ZipFile(zip_file, 'r') as zip_ref:
         zip_contents = zip_ref.namelist()
@@ -115,7 +115,7 @@ def extract_latest_zip():
                 extracted_any = True
 
         if extracted_any:
-            logger.info(f"Extraction completed for aid year {aid_year} with datestamp {new_date}.")
+            logger.info(f"Extraction completed for aid year {academic_year} with datestamp {new_date}.")
         else:
             logger.info("No new files needed to be extracted. All files are already current.")
 
