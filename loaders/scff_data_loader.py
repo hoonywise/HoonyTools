@@ -61,10 +61,10 @@ def is_newer_datestamp(cursor, table_name, new_datestamp):
         return True
 
 # Load data to DWHDB with Datestamp Check
-def load_data_to_db(table_name, aidy, datestamp, df, conn, cursor):
+def load_data_to_db(table_name, acyr, datestamp, df, conn, cursor):
     df = clean_column_names(df)
     df = convert_to_string(df)
-    df['AIDY'] = aidy
+    df['ACYR'] = acyr
     df['DATESTAMP'] = datestamp
     table_name = f'SCFF_{table_name}'
 
@@ -78,9 +78,9 @@ def load_data_to_db(table_name, aidy, datestamp, df, conn, cursor):
         except oracledb.DatabaseError as e:
             logger.error(f'Error creating table {table_name}: {e}')
 
-    delete_query = f'DELETE FROM DWH.{table_name.upper()} WHERE AIDY = :1'
-    cursor.execute(delete_query, [aidy])
-    logger.info(f'Deleted existing records for AIDY {aidy} from {table_name}.')
+    delete_query = f'DELETE FROM DWH.{table_name.upper()} WHERE ACYR = :1'
+    cursor.execute(delete_query, [acyr])
+    logger.info(f'Deleted existing records for ACYR {acyr} from {table_name}.')
 
     insert_query = f'INSERT INTO DWH.{table_name.upper()} ({', '.join([f'"{col}"' for col in df.columns])}) VALUES ({', '.join([f':{i+1}' for i in range(len(df.columns))])})'
     for _, row in df.iterrows():
@@ -96,7 +96,7 @@ def load_data_to_db(table_name, aidy, datestamp, df, conn, cursor):
     return True
 
 # Main data loading process
-def process_latest_files(latest_path, aidy, conn, cursor):
+def process_latest_files(latest_path, acyr, conn, cursor):
     for file in os.listdir(latest_path):
         if abort_manager.should_abort:
             abort_manager.cleanup_on_abort(conn, cursor)
@@ -110,7 +110,7 @@ def process_latest_files(latest_path, aidy, conn, cursor):
                 df = pd.read_csv(file_path, sep="|", dtype=str)
                 df = clean_column_names(df)
                 df = convert_to_string(df)
-                if not load_data_to_db(table_name, aidy, datestamp, df, conn, cursor):
+                if not load_data_to_db(table_name, acyr, datestamp, df, conn, cursor):
                     return False
             except Exception as e:
                 logger.error(f'Error processing {file}: {e}')
@@ -128,22 +128,22 @@ def run_scff_loader(existing_conn=None):
     abort_manager.reset()
 
     aid_years = [d for d in os.listdir(data_path) if os.path.isdir(os.path.join(data_path, d))]
-    for aidy in aid_years:
+    for acyr in aid_years:
         if abort_manager.should_abort:
             logger.warning("⏹️ SCFF Loader aborted by user.")
             break
-        latest_path = os.path.join(data_path, aidy, 'Latest')
+        latest_path = os.path.join(data_path, acyr, 'Latest')
         if os.path.exists(latest_path):
-            logger.info(f'Loading data from Latest folder for aid year: {aidy}')
-            success = process_latest_files(latest_path, aidy, conn, cursor)
+            logger.info(f'Loading data from Latest folder for aid year: {acyr}')
+            success = process_latest_files(latest_path, acyr, conn, cursor)
             if success:
                 conn.commit()
-                logger.info(f"✅ Committed records for AIDY {aidy}")
+                logger.info(f"✅ Committed records for ACYR {acyr}")
             else:
-                logger.warning(f"⏪ Rolled back records for AIDY {aidy}")
+                logger.warning(f"⏪ Rolled back records for ACYR {acyr}")
                 break
         else:
-            logger.error(f'No Latest folder found for aid year: {aidy}')
+            logger.error(f'No Latest folder found for aid year: {acyr}')
 
     try:
         cursor.close()

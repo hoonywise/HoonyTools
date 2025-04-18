@@ -355,7 +355,7 @@ TOOLS = {
     "📁 SCFF Extractor": run_scff_extractor,
     "🔒 SCFF Loader": run_scff_loader,        # accepts optional conn
     "🔒 SCFF Record Cleanup": lambda: delete_dwh_rows(
-        "SCFF_%", "AIDY", "Enter AIDY to delete from selected SCFF tables:", root
+        "SCFF_%", "ACYR", "Enter ACYR to delete from selected SCFF tables:", root
     ),
     "🔒 MIS Loader": run_mis_loader,          # accepts optional conn
     "🔒 MIS Record Cleanup": lambda: delete_dwh_rows(

@@ -243,7 +243,7 @@ def delete_dwh_rows(table_filter, label, prompt_label, parent_window=None):
 
     for table in selected:
         try:
-            column = "AIDY" if table.startswith("SCFF_") else "GI03_TERM_ID"
+            column = "ACYR" if table.startswith("SCFF_") else "GI03_TERM_ID"
             cursor.execute(f'DELETE FROM DWH."{table}" WHERE {column} = :1', [value])
             logger.info(f"🧹 Deleted from {table} where {column} = {value}")
         except Exception as e:
