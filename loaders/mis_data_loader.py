@@ -492,7 +492,7 @@ def load_to_oracle(df, table_name, annual_code, conn, cursor):
         columns = ', '.join([
             f'{col.upper()} VARCHAR2(2)' if col.upper() == 'GI90_RECORD_CODE' else
             f'{col.upper()} VARCHAR2(3)' if col.upper() in ['GI01_DISTRICT_COLLEGE_ID', 'GI03_TERM_ID'] else
-            f'{col.upper()} VARCHAR2(10)' if col.upper() == 'SB00_STUDENT_ID' else
+            f'{col.upper()} VARCHAR2(9)' if col.upper() == 'SB00_STUDENT_ID' else
             f'{col.upper()} VARCHAR2(4000)'
             for col in df.columns
         ])
@@ -506,8 +506,10 @@ def load_to_oracle(df, table_name, annual_code, conn, cursor):
             logger.error(f"❌ Failed to create table {table_name}: {e}")
             return False
 
-    # ✅ Always try to create the index, whether or not table existed
-    create_index_if_columns_exist(cursor, "DWH", table_name, ["GI90_RECORD_CODE", "GI01_DISTRICT_COLLEGE_ID", "GI03_TERM_ID"])
+        # ✅ Always try to create the index, whether or not table existed
+        safe_index_cols = [col for col in ["GI90_RECORD_CODE", "GI01_DISTRICT_COLLEGE_ID", "GI03_TERM_ID"] if col in df.columns]
+        logger.debug(f"🔍 Attempting to index columns in {table_name}: {safe_index_cols}")
+        create_index_if_columns_exist(cursor, "DWH", table_name, safe_index_cols)
 
     if 'GI03_TERM_ID' in df.columns:
         cursor.execute(f'DELETE FROM DWH.{table_name.upper()} WHERE GI03_TERM_ID = :1', [annual_code])

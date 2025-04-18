@@ -8,6 +8,9 @@ import ctypes
 import sys
 from pathlib import Path
 from PIL import Image, ImageTk
+import pystray
+from pystray import MenuItem as item
+
 
 # Dynamically add HoonyTools's parent to sys.path
 sys.path.append(str(Path(__file__).resolve().parents[1]))  # HoonyTools parent
@@ -336,6 +339,20 @@ def launch_tool_gui():
     if not validate_required_folders():
         root.destroy()
         return
+    
+    def setup_tray_icon():
+        def on_exit(icon, item):
+            icon.stop()
+            root.quit()
+
+        tray_icon_path = ASSETS_PATH / "assets" / "hoonywise_32x32.png"
+        if tray_icon_path.exists():
+            tray_img = Image.open(tray_icon_path)
+            tray_icon = pystray.Icon("HoonyTools", tray_img, "HoonyTools", menu=(item("Exit", on_exit),))
+            tray_icon.run()
+
+    # 🧠 Start it in the background so GUI stays responsive
+    threading.Thread(target=setup_tray_icon, daemon=True).start()    
         
     root.mainloop()
 

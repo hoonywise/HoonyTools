@@ -12,7 +12,7 @@
 HoonyTools is an all-in-one Python-based toolkit for loading, transforming, and cleaning data in Oracle databases.  
 Originally built for institutional data teams, it has since been expanded into a flexible platform for analysts and researchers in any organization.
 
-Designed with front-end users in mind, HoonyTools features an intuitive GUI that makes it easy to load data into Oracle as tables or views, run batch imports, and perform record-level cleanup — all without writing a single line of SQL.
+Designed with front-end users in mind, HoonyTools features an intuitive GUI that makes it easy to load data into Oracle as tables or views, run batch imports, and perform record-level cleanup.
 
 With built-in support for SCFF, MIS, Excel, and CSV formats, and customizable database connections via user-defined DSNs, HoonyTools is ideal for daily ETL, research, and reporting workflows.
 
@@ -22,92 +22,127 @@ With built-in support for SCFF, MIS, Excel, and CSV formats, and customizable da
 
 ## 🧑‍💻 Quick Start
 
-### No Python or Dependencies Required
+### Python Required (No EXE)
 
-HoonyTools is bundled into a single, portable executable (`HoonyTools.exe`). Simply download and double-click to run.
+HoonyTools now runs directly as a Python GUI app — no installation or EXE needed.
 
 **First-Time Setup:**
 
-- On initial launch, certain tools (e.g., SCFF and MIS Loaders) will prompt you **one time** for the DWH Oracle password.
-- Your password will be securely stored in a `config.ini` file, and you won't be prompted again.
+1. Ensure [Python 3.13+](https://www.python.org/downloads/) is installed
+2. Open a terminal in the HoonyTools folder
+3. Run:  
+   ```
+   pip install -r requirements.txt
+   ```
+4. Launch the app by double-clicking `run.bat` or running:
+   ```
+   pythonw launcher_gui.pyw
+   ```
 
----
-
-### ⚠️ Windows Defender / SmartScreen Notice
-
-When running `HoonyTools.exe` for the first time, Windows may display a blue **"Windows protected your PC"** warning.
-
-This is normal for unsigned apps. To proceed:
-
-1. Click **“More info”**
-2. Then click **“Run anyway”**
-
-HoonyTools is safe to use — this message appears because the app isn't code-signed.
-
----
-
-### 🛠️ Optional: Unblock the Executable (Power Users)
-
-To prevent the warning entirely:
-
-1. **Right-click** `HoonyTools.exe` and select **Properties**
-2. Check **“Unblock”** at the bottom
-3. Click **Apply**, then run the app
-
-This removes the “downloaded from the internet” flag and allows smoother launches.
+✅ This launches the GUI with **no terminal window**
 
 ---
 
 ## 🗂️ Folder Structure
 
-When you first run `HoonyTools.exe`, it will create necessary folders automatically:
+After unzipping `HoonyTools_v1.0.2_python.zip`, you should see:
 
 ```
 HoonyTools/
-├── HoonyTools.exe         # The main executable
+├── launcher_gui.pyw          # Main GUI entry point (no terminal window)
+├── run.bat                   # Silent launcher using pythonw
+├── requirements.txt          # pip dependencies
+├── README.txt                # Usage guide for Windows users
+├── LICENSE.md
+├── CHANGELOG.md
+├── config.py                 # Asset path handling and support for PyInstaller builds
 ├── libs/
-│   └── config.ini         # Auto-created on first DWH login (stores credentials securely)
+│   └── config.ini            # Auto-created on first DWH login (stores credentials securely)
+├── loaders/                  # SCFF and MIS loaders
+├── tools/                    # Table cleanup, extractor, and support tools
+├── assets/                   # Taskbar icon, splash screen, and tray icon
+│   ├── hoonywise.ico
+│   ├── hoonywise_300.png
+│   └── hoonywise_32x32.png
 ├── SCFF/
-│   ├── Downloads/         # Holds SCFF zip downloads
-│   └── SCFF_Data/         # Extracted data organized by academic year (ACYR)
-│       ├── <ACYR>/        # ACYR automatically generated during extraction
-│       │   ├── Latest/    # Extracts the scff860.zip here
-│       │   └── Archive/   # Pushes older files from Latest to here automatically when extracting
+│   ├── Downloads/            # Holds SCFF zip downloads (e.g. scff860.zip)
+│   └── SCFF_Data/            # Extracted data organized by academic year (ACYR)
+│       ├── <ACYR>/           # ACYR folder is created dynamically (e.g., 2324 → 2023)
+│       │   ├── Latest/       # New extracts go here
+│       │   └── Archive/      # Older extracts auto-archived here
 └── MIS/
-    └── .dat input files   # Place your MIS .dat files here for loading
+    └── .dat input files      # Place your MIS .dat files here for loading
 ```
+
+Optional: Run `setup_config.py` to securely generate your Oracle DWH login config on first launch.
 
 ---
 
 ## 🛠️ Setup Requirements
 
-### Oracle Client
+To run HoonyTools, you’ll need the following installed and configured:
 
-To connect to Oracle databases, the Oracle Instant Client must be installed and properly configured. This includes:
+---
 
-1. **Adding the Instant Client folder to your system PATH**  
-   Example: `C:\oracle\instantclient_21_13`
+### ✅ Python 3.13 or Higher
 
-2. **Creating a `tnsnames.ora` file** inside your Oracle `network/admin` folder (or setting a `TNS_ADMIN` environment variable to point to it).  
+1. Install from the official site:  
+   👉 [https://www.python.org/downloads/](https://www.python.org/downloads/)
+
+2. During installation, make sure to check:  
+   ✅ “Add Python to PATH”
+
+---
+
+### 🧩 Required Python Packages
+
+Once Python is installed, run the following from the HoonyTools folder:
+
+```
+pip install -r requirements.txt
+```
+
+This installs all required libraries including:
+
+- `oracledb` (for Oracle connectivity)
+- `pandas`, `openpyxl` (for Excel/CSV processing)
+- `pywin32`, `pystray`, `Pillow` (for GUI tray features and icon support)
+
+---
+
+### 🛢️ Oracle Instant Client
+
+To connect to Oracle databases, the **Oracle Instant Client** must be installed and properly configured:
+
+1. **Add the Instant Client folder to your system PATH**  
+   Example:
+   ```
+   C:\oracle\instantclient_21_13
+   ```
+
+2. **Create a `tnsnames.ora` file** inside your Oracle `network/admin` folder  
+   or set the `TNS_ADMIN` environment variable to point to it.
+
    This file defines named DSNs such as `DWHDB_DB` used by HoonyTools.
 
-Example entry:
+   Example entry:
+   ```
+   DWHDB_DB =
+     (DESCRIPTION =
+       (ADDRESS = (PROTOCOL = TCP)(HOST = your.hostname.edu)(PORT = 1521))
+       (CONNECT_DATA =
+         (SERVICE_NAME = XEPDB1)
+       )
+     )
+   ```
 
-```
-DWHDB_DB =
-  (DESCRIPTION =
-    (ADDRESS = (PROTOCOL = TCP)(HOST = your.hostname.edu)(PORT = 1521))
-    (CONNECT_DATA =
-      (SERVICE_NAME = XEPDB1)
-    )
-  )
-```
+3. **Test with `sqlplus` or `tnsping`**  
+   Example:
+   ```
+   sqlplus your_username@DWHDB_DB
+   ```
 
-
-3. **Testing the connection with `sqlplus` or `tnsping`** to confirm your setup: sqlplus your_username@DWHDB_DB
-
-
-If this connects successfully, HoonyTools will work as well.
+If you can connect via `sqlplus`, HoonyTools will work too.
 
 📥 [Download Oracle Instant Client](https://www.oracle.com/database/technologies/instant-client/downloads.html)
 
@@ -115,10 +150,36 @@ If this connects successfully, HoonyTools will work as well.
 
 ## 🚀 Running HoonyTools
 
-Simply double-click `HoonyTools.exe` to launch the GUI interface.
+Once requirements are installed, simply launch HoonyTools via:
 
-- **First Run:** You will see a prompt to create `SCFF` and `MIS` directories. Confirm with caution—these directories interact with DWH, which stores all critical reporting data.
-- **Normal Operation:** The GUI launcher provides easy access to all tools.
+- Double-click `run.bat`, or  
+- Right-click `launcher_gui.pyw` → Open with → Python
+
+This launches the GUI instantly with no terminal or black box window.
+
+---
+
+### 🏁 First-Time Run
+
+On first launch:
+
+- You’ll be prompted to **create `SCFF/` and `MIS/` folders** if they don’t exist
+- These folders are used to manage incoming SCFF ZIP files and MIS `.dat` inputs
+
+✅ These directories **do not affect production** — HoonyTools only uploads to your authorized DWH schema.
+
+---
+
+### 🧭 GUI Usage
+
+Once launched, the GUI gives access to all tools via an intuitive interface:
+
+- Load SCFF and MIS files
+- Clean tables or delete old records
+- Load Excel and CSV files
+- View console logs and abort operations gracefully
+
+You can run as often as needed — no admin rights or elevated privileges required.
 
 ---
 
@@ -178,6 +239,8 @@ Tip: To reset your saved DWH credentials (e.g., if the DSN or password changes),
 ## 🚟 Notes for Developers
 
 This section documents key implementation details, platform-specific workarounds, and lessons learned during the development of HoonyTools. It is intended to help future contributors maintain stability across platforms and understand why certain design choices were made.
+
+Although HoonyTools now runs as a Python-based `.pyw` app by default, these EXE-specific workarounds remain valuable for any future signed `.exe` packaging (e.g., with PyInstaller + certificate signing).
 
 ---
 

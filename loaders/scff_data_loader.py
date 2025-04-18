@@ -71,7 +71,7 @@ def load_data_to_db(table_name, acyr, datestamp, df, conn, cursor):
     table_needs_create = not table_exists(cursor, table_name)
     if table_needs_create:
         create_table_query = f'CREATE TABLE DWH.{table_name.upper()} ({", ".join([
-            f'"{col}" VARCHAR2(10)' if col.upper() == "STUDENT_ID" else
+            f'"{col}" VARCHAR2(9)' if col.upper() == "STUDENT_ID" else
             f'"{col}" VARCHAR2(4)' if col.upper() == "ACYR" else
             f'"{col}" VARCHAR2(4000)' for col in df.columns
         ])})'

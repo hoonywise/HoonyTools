@@ -90,7 +90,7 @@ def drop_table_if_exists(cursor, schema, table_name):
 # ==== CREATE TABLE ====
 def create_table(cursor, schema, table_name, df):
     cols_sql = ', '.join([
-        f'"{col}" VARCHAR2(10)' if col.upper() in ['PIDM', 'STUDENT_ID'] else
+        f'"{col}" VARCHAR2(9)' if col.upper() in ['PIDM', 'STUDENT_ID'] else
         f'"{col}" VARCHAR2(6)' if col.upper() == 'TERM' else
         f'"{col}" VARCHAR2(4000)'
         for col in df.columns

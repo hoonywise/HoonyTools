@@ -1,0 +1,3 @@
+@echo off
+title Launching HoonyTools...
+start "" pythonw launcher_gui.pyw
