@@ -1,29 +1,20 @@
-HoonyTools License  
-===================
+# HoonyTools License Agreement
 
-HoonyTools is open source and **free for personal and educational use**.
+Copyright © 2024 Jihoon Ahn (hoonywise)
 
-You are welcome to:
+This software was developed independently, outside of employment scope,  
+using personal equipment, tools, and time. The author retains full rights  
+to the source code and all derivative works.
 
-- Use and modify this software for **your own non-commercial purposes**
-- Use it at your job in an **unofficial**, **individual** capacity (e.g., personal workstation)
-- Share it with others for **individual or educational** use
-- Fork the repository and suggest enhancements
+Permission is granted to individual users to run the pre-compiled executable  
+(**HoonyTools.exe**) for **non-commercial, internal use only**.
 
-You may NOT:
+Use by organizations, educational institutions, or public entities — including  
+but not limited to installation on shared drives, institutional networks,  
+or distribution to multiple users — **requires a separate license agreement**.
 
-- **Deploy HoonyTools across an institution or department** (e.g., IT-managed systems, shared drives)
-- **Replace or add your organization’s logo** without express written permission
-- **Bundle or integrate HoonyTools into institutional systems or services**
-- **Sell, commercialize, or distribute HoonyTools as part of a paid offering**
-- Remove or obscure credit to the original creator (`@hoonywise`)
+No portion of this software may be reverse-engineered, decompiled, or used  
+to create derivative works without written permission from the author.
 
-📩 **For enterprise, institutional, or branded use**, contact:  
+📩 **For licensing inquiries or custom development, contact:**  
 **[hoonywise@proton.me](mailto:hoonywise@proton.me)**
-
-If you build upon this project or share a modified version, you must include:
-
-- A visible link back to the original GitHub repository
-- Clear attribution to the original creator
-
-By using this software, you agree to these terms.
