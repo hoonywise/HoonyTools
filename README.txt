@@ -46,3 +46,5 @@ All logs are visible in the GUI log window.
 ----------------------------------------
 This version avoids `.exe` builds to remain antivirus-safe.  
 Requires Python, but provides clean GUI without CMD popups.
+
+💙 Support development: https://www.paypal.com/donate/?hosted_button_id=NJSTAENDWQLXS

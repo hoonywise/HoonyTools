@@ -6,6 +6,7 @@
 </table>
 
 [![](https://img.shields.io/badge/license-Custom-gold)](LICENSE.md)
+[![](https://img.shields.io/badge/Donate-PayPal-blue)](https://www.paypal.com/donate/?hosted_button_id=NJSTAENDWQLXS)
 
 ---
 
