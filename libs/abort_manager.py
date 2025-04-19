@@ -1,27 +1,22 @@
-# codelibrary/libs/abort_manager.py
-
 should_abort = False
 created_tables = set()
 
+import logging
+logger = logging.getLogger(__name__)
 
 def set_abort(value=True):
     global should_abort
     should_abort = value
-
 
 def reset():
     global should_abort, created_tables
     should_abort = False
     created_tables.clear()
 
-
 def register_created_table(table_name):
     created_tables.add(table_name.upper())
 
-
 def cleanup_on_abort(conn, cursor):
-    import logging
-    logger = logging.getLogger(__name__)
     try:
         logger.warning("⏹️ Aborting operation. Rolling back and cleaning up...")
         conn.rollback()

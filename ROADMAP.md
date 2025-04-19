@@ -7,7 +7,6 @@ It focuses on practical, high-impact improvements aligned with real-world analys
 
 ## 🖥️ GUI Improvements
 
-- [ ] Add drag-and-drop support for file input (Excel, CSV, .dat, ZIP)
 - [ ] Optional dark mode toggle for the GUI
 - [ ] Persistent window size and position memory between launches
 
@@ -15,7 +14,6 @@ It focuses on practical, high-impact improvements aligned with real-world analys
 
 ## 🔐 Login & Credential Handling
 
-- [ ] Toggle option to forget saved credentials (reset `config.ini`)
 - [ ] Add connection test button to validate DSN/login without loading files
 
 ---
@@ -23,7 +21,6 @@ It focuses on practical, high-impact improvements aligned with real-world analys
 ## 🧹 File & Folder Management
 
 - [ ] One-click "Open Folder" button in each loader tool for quick file access
-- [ ] Option to auto-archive old files (e.g., SCFF `.txt`, MIS `.dat`, or ZIPs)
 
 ---
 

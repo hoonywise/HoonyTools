@@ -2,6 +2,19 @@
 __pycache__/
 *.py[cod]
 RELEASE/
+build_*.bat
+*.zip
+*.dat
+
+# SCFF MIS
+SCFF/
+MIS/
+
+# Debug scripts
+*_debug*.*
+*_bak*.*
+*fix*.*
+old_scripts/
 
 # PyInstaller build artifacts
 build/

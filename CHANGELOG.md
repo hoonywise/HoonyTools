@@ -4,28 +4,108 @@ All notable changes to **HoonyTools** will be documented in this file.
 
 ---
 
+## 🚀 v1.1.0 – Login System Overhaul, Thread Safety, and Versioned Packaging
+
+This milestone release introduces a secure and consistent login flow, thread-safe execution, session-based memory, and a modernized build system with versioned output.
+
+### Login System Enhancements
+
+- New login prompt with **"Save password"** checkbox
+- Credentials saved only if explicitly checked
+- If unchecked, login prompt will appear every time
+- `config.ini` entries are **auto-removed** when checkbox is unchecked
+- Unified login logic across **SCFF**, **MIS**, **Excel**, and **Cleanup** tools
+
+### Thread-Safe Oracle Connections
+
+- MIS loader refactored to accept a passed Oracle connection instead of initializing its own
+- All login windows are created on the **main thread**, resolving previous crash issues with large files (e.g., FA and SF)
+- Eliminated ghost windows and thread violations
+
+### Config & Session Behavior
+
+- Oracle credentials now persist **per user/schema** only when saved
+- Session memory used during a single runtime without forcing save
+- Prompt respects session status and login method
+
+### Packaging Overhaul
+
+- Output now goes to `build\v1.1.0\HoonyTools\...`
+- Distributable ZIP is created at `dist\HoonyTools_v1.1.0.zip`
+- All files are placed inside a top-level `HoonyTools/` folder in the archive
+- `libs/config.ini` is automatically **excluded** from the ZIP
+
+### Documentation Updates
+
+- Updated `README.md` and `README.txt` to include:
+  - Folder structure
+  - Login behavior with checkbox
+  - Developer note on threading fix for MIS loaders
+- Clarified usage of `HoonyTools.pyw` as the new launcher
+- Tools list updated to include **SQL View Loader**
+
+### Notable Fixes
+
+- Resolved crash when loading FA/SF files due to Tkinter thread violations
+- `get_db_connection()` now always executes in the main thread
+
+---
+
+## 🔁 v1.0.3 – Switch to Python Launcher + ZIP Packaging
+
+This release replaces the standalone `.exe` launcher with a Python-based GUI runner (`.pyw` + `run.bat`), allowing HoonyTools to be distributed cleanly as a ZIP without triggering antivirus or requiring expensive code signing.
+
+### Key Changes
+
+- Switched from EXE to `.pyw` launcher (`HoonyTools.pyw`)
+- GUI now runs silently via `pythonw`
+- Included `run.bat` for terminal-free launching on Windows
+- EXE and PyInstaller packaging removed
+
+### Packaging Method Updated
+
+- New structure: `dist/HoonyTools_v1.0.3.zip`
+- ZIP contains clean folder layout under `HoonyTools/`
+- `RELEASE/` folder excluded from Git
+- Build script (`build_pkg.bat`) introduced for repeatable packaging
+
+### Documentation Update
+
+- `README.md` rewritten to match ZIP-based installation and usage
+- Setup guidance for Python 3.13+
+- Included folder structure and launcher behavior
+- New `README.txt` added for Windows users
+
+### Notes
+
+- All original GUI functionality remains intact
+- EXE-free model avoids SmartScreen warnings
+- Ideal for Python-capable teams, schools, or secure organizations
+
+---
+
 ## [v1.0.2] – Auto Indexing + Terminology Cleanup
 
-✨ New Features:
+### New Features
 
 - Added automatic index creation for common keys:
   - SCFF Loader: indexes `STUDENT_ID` and `ACYR`
   - MIS Loader: indexes `GI90_RECORD_CODE`, `GI01_DISTRICT_COLLEGE_ID`, `GI03_TERM_ID`
   - Excel/CSV Loader: indexes `PIDM`, `TERM`, `STUDENT_ID` (if columns exist)
 
-🔧 Enhancements:
+### Enhancements
 
 - Shortened key field types to prevent `ORA-01450` (max key length exceeded)
 - Index creation now runs even if table already exists (with safe error handling)
 - Added user notice in Excel sheet loader GUI: indexable columns will be indexed
 - Optional CSV rename prompt added to match Excel sheet behavior
 
-🧼 Terminology Cleanup:
+### Terminology Cleanup
 
 - Replaced all references to “Aid Year” with “academic year (ACYR)”
 - Updated README and SCFF loader logic to explain 2324 → 2023 `ACYR` conversion for Banner compatibility
 
-📚 Docs:
+### Docs
 
 - Added 📈 Automatic Indexing section to README
 - Clarified SCFF loader behavior and folder logic

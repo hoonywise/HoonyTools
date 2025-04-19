@@ -7,9 +7,6 @@ import re
 from pathlib import Path
 import logging
 
-if __name__ != '__main__':
-    logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-
 # Configuration
 from config import PROJECT_PATH as base_path
 downloads_path = base_path / "SCFF" / "Downloads"

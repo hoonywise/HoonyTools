@@ -49,29 +49,27 @@ After unzipping `HoonyTools_v1.0.2_python.zip`, you should see:
 
 ```
 HoonyTools/
-├── launcher_gui.pyw          # Main GUI entry point (no terminal window)
-├── run.bat                   # Silent launcher using pythonw
-├── requirements.txt          # pip dependencies
-├── README.txt                # Usage guide for Windows users
-├── LICENSE.md
-├── CHANGELOG.md
-├── config.py                 # Asset path handling and support for PyInstaller builds
-├── libs/
-│   └── config.ini            # Auto-created on first DWH login (stores credentials securely)
-├── loaders/                  # SCFF and MIS loaders
-├── tools/                    # Table cleanup, extractor, and support tools
-├── assets/                   # Taskbar icon, splash screen, and tray icon
-│   ├── hoonywise.ico
-│   ├── hoonywise_300.png
-│   └── hoonywise_32x32.png
+├── HoonyTools.pyw         # Main launcher (double-click this)
+├── config.py              # Handles path logic
+├── setup_config.py        # One-time setup script for DWH login
+├── README.txt             # Windows user guide
+├── README.md              # This file (GitHub format)
+├── LICENSE.md             # Licensing terms
+├── CHANGELOG.md           # Release notes
+├── requirements.txt       # (Optional) Python modules if running from source)
+├── libs/                  # Shared utility modules (Oracle, config, logging, etc.)
+│   └── config.ini         # Created at first login if "Save password" is checked
+├── loaders/               # SCFF, MIS, and Excel loaders
+├── tools/                 # Table cleanup tools and extractors
+├── assets/                # Icons and splash images
 ├── SCFF/
-│   ├── Downloads/            # Holds SCFF zip downloads (e.g. scff860.zip)
-│   └── SCFF_Data/            # Extracted data organized by academic year (ACYR)
-│       ├── <ACYR>/           # ACYR folder is created dynamically (e.g., 2324 → 2023)
-│       │   ├── Latest/       # New extracts go here
-│       │   └── Archive/      # Older extracts auto-archived here
+│   ├── Downloads/         # Holds SCFF zip downloads (e.g. scff860.zip)
+│   └── SCFF_Data/         # Organized by academic year (ACYR)
+│       ├── <ACYR>/        # e.g. 2324/
+│       │   ├── Latest/    # Fresh extracts go here
+│       │   └── Archive/   # Older extracts are auto-archived here
 └── MIS/
-    └── .dat input files      # Place your MIS .dat files here for loading
+    └── .dat input files   # Place your MIS .dat files here
 ```
 
 Optional: Run `setup_config.py` to securely generate your Oracle DWH login config on first launch.
@@ -148,14 +146,11 @@ If you can connect via `sqlplus`, HoonyTools will work too.
 
 ---
 
-## 🚀 Running HoonyTools
+## 🚀 How to Launch
 
-Once requirements are installed, simply launch HoonyTools via:
+Simply double-click `HoonyTools.pyw` to launch the application.
 
-- Double-click `run.bat`, or  
-- Right-click `launcher_gui.pyw` → Open with → Python
-
-This launches the GUI instantly with no terminal or black box window.
+This file opens without a terminal window and starts the GUI immediately.
 
 ---
 
@@ -177,22 +172,43 @@ Once launched, the GUI gives access to all tools via an intuitive interface:
 - Load SCFF and MIS files
 - Clean tables or delete old records
 - Load Excel and CSV files
+- Load SQL queries as views
 - View console logs and abort operations gracefully
 
 You can run as often as needed — no admin rights or elevated privileges required.
 
 ---
 
-## 🔧 Included Tools & Descriptions
+## 🛠 Available Tools
 
-- **SCFF Loader**: Load SCFF TXT files into Oracle from `SCFF/SCFF_Data/<ACYR>/Latest`.  
-  Automatically converts folder names like `2324` into `2023` `ACYR` to align with `STVTERM_ACYR_CODE` used in Banner.  
+- **SCFF Loader**  
+  Load SCFF TXT files into Oracle from `SCFF/SCFF_Data/<ACYR>/Latest`.  
+  Automatically converts folder names like `2324` into `2023` ACYR to align with `STVTERM_ACYR_CODE` used in Banner.  
   Prompts for DWH password once and saves it.
-- **MIS Loader**: Load MIS .dat files from the `MIS/` folder into Oracle. Also prompts for DWH password once.
-- **SCFF Extractor**: Extract SCFF ZIP files from `SCFF/Downloads/` to the appropriate `SCFF_Data/<ACYR>/Latest` folder.
-- **Excel/CSV Loader**: Load Excel/CSV files into Oracle DB easily through a guided GUI.
-- **Table Cleanup**: Selectively delete data from your Oracle tables. Prompts for schema/password if not using DWH.
-- **SCFF/MIS Cleanup**: Specifically deletes records based on ACYR (SCFF) or TERM (MIS) in DWH schema. Use with care!
+
+- **MIS Loader**  
+  Load MIS `.dat` files from the `MIS/` folder into Oracle. Prompts for DWH login.  
+  Supports dynamic layout parsing and full rollback on failure.
+
+- **SQL View Loader**  
+  Instantly create Oracle views from SQL files placed in the `views/` folder.  
+  Useful for versioned Banner views or department-specific logic. Supports both user schema and DWH.
+
+- **Excel/CSV Loader**  
+  Load Excel or CSV files into Oracle from a local file picker.  
+  Auto-maps column headers and preserves datatypes.
+
+- **SCFF Extractor**  
+  Extract SCFF ZIP files from `SCFF/Downloads/` into the correct `SCFF_Data/<ACYR>/Latest` folder.
+
+- **Table Cleanup**  
+  Selectively delete rows or drop tables from your Oracle schema.  
+  Works with user schema or DWH, depending on the tool settings.
+
+- **SCFF/MIS Cleanup**  
+  Targeted deletion based on `ACYR` (SCFF) or `TERM` (MIS) within DWH schema.  
+  Only affects rows, not entire tables.
+
 
 ### 📈 Automatic Indexing (PIDM / TERM / STUDENT_ID)
 
@@ -219,13 +235,15 @@ If Oracle cannot create the index due to a key size limit (e.g., `VARCHAR2(4000)
 - Ensure your **Oracle Instant Client** is properly installed and configured (see setup section above).
 - You must be connected to your institution’s network or VPN if the Oracle database is not publicly accessible.
 - All tools require a valid Oracle **DSN (Data Source Name)** such as `DWHDB_DB`. You may define your own DSN in `tnsnames.ora` to point to your organization’s database.
-- The first time you run a tool that connects to Oracle, you will be prompted for your **username, password, and DSN**. These credentials will be securely saved in `config.ini` for future use.
+- The first time you run a tool that connects to Oracle, you will be prompted for your **username, password, and DSN**.  
+  A **"Save password"** checkbox is available in the login popup. If checked, your credentials will be saved in `libs/config.ini` for future use. If unchecked, the login prompt will appear every time.
 - **Use caution when working with production databases**. Certain tools (e.g., SCFF and MIS loaders, Table Cleanup) can delete and overwrite data.
 - For best results, always review your files before running a loader, and monitor the logging window for any errors or warnings.
 
-> 🧠 Note: This toolset interacts directly with the Oracle Data Warehouse (DWH). Ensure you understand the impact of any actions, particularly when loading SCFF/MIS files or using cleanup tools.
+> 🧠 **Note:** This toolset interacts directly with the Oracle Data Warehouse (DWH). Ensure you understand the impact of any actions, particularly when loading SCFF/MIS files or using cleanup tools.
 
-Tip: To reset your saved DWH credentials (e.g., if the DSN or password changes), simply delete the `libs/config.ini` file. The next time you launch a DWH-related tool, HoonyTools will prompt you to enter new login information and save it again.
+💡 **Tip:** To reset your saved DWH credentials (e.g., if the DSN or password changes), simply delete the `libs/config.ini` file.  
+The next time you launch a DWH-related tool, HoonyTools will prompt you to enter new login information and ask whether to save it again.
 
 ---
 
@@ -248,7 +266,7 @@ Although HoonyTools now runs as a Python-based `.pyw` app by default, these EXE-
 
 A detailed breakdown of how we ensure HoonyTools shows the correct custom icon in the taskbar when bundled as an `.exe`.
 
-#### What We Learned
+#### Key Findings
 
 - **Taskbar icon is owned by the *first visible Tkinter window*.**  
   We must call `Tk()` and make it visible **before** any splash screens or login prompts. Otherwise, the icon becomes permanently associated with the wrong window.
@@ -302,6 +320,32 @@ def safe_exit():
     except Exception:
         pass
 ```
+
+---
+
+### 🐞 Entry #2: MIS Loader Crash (FA/SF files) and Tkinter Thread Violation
+
+#### What Happened
+
+When loading FA or SF `.dat` files using the MIS Loader, HoonyTools crashed with errors like:
+
+> ❌ `Login prompt must be called from the main thread.`  
+> ❌ `Toplevel()` window creation failed due to threading issues
+
+This happened because the loader attempted to open a Tkinter login window (`Toplevel`) inside a background thread — which is not allowed by Tkinter on Windows.
+
+#### What We Learned
+
+- **Tkinter GUI elements must always be created from the main thread.**
+- **`Toplevel()` windows used in login prompts must be attached to the `_default_root`.**
+- Background loaders like `run_mis_loader()` must receive the Oracle connection object **after login**, not initiate the login themselves.
+
+#### Fix Implemented
+
+- Moved the call to `get_db_connection()` into the **main thread** (within `run_selected()` in `launcher_gui.pyw`).
+- The returned `conn` object is passed into `run_mis_loader(existing_conn=conn)` inside the thread — solving the crash.
+
+---
 
 More developer entries will be added here as we identify new platform-specific quirks, architecture patterns, or tricky implementation areas.
 

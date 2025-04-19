@@ -6,6 +6,8 @@ from libs import session
 import ctypes
 from config import ASSETS_PATH
 
+logger = logging.getLogger(__name__)
+
 def run_sql_view_loader(on_finish=None):
     def on_submit():
         view_name = view_name_entry.get().strip()
@@ -35,18 +37,27 @@ def run_sql_view_loader(on_finish=None):
             cursor.execute(grant_stmt)
 
             conn.commit()
-            logging.info(f"✅ View '{view_name}' created and granted SELECT to PUBLIC.")
+            logger.info(f"✅ View '{view_name}' created and granted SELECT to PUBLIC.")
 
             messagebox.showinfo("Success", f"✅ View '{view_name}' created successfully.")
             builder_window.destroy()
             if on_finish:
                 on_finish()            
         except Exception as e:
-            logging.error(f"❌ Error creating view: {e}")
+            logger.error(f"❌ Error creating view: {e}")
             messagebox.showerror("Error", f"❌ Failed to create view:\n{e}")
         finally:
-            cursor.close()
-            conn.close()
+            try:
+                if cursor:
+                    cursor.close()
+            except Exception as e:
+                logger.warning(f"⚠️ Failed to close cursor: {e}")
+
+            try:
+                if conn:
+                    conn.close()
+            except Exception as e:
+                logger.warning(f"⚠️ Failed to close connection: {e}")
 
     def on_cancel():
         builder_window.destroy()
@@ -64,7 +75,7 @@ def run_sql_view_loader(on_finish=None):
         icon_path = ASSETS_PATH / "assets" / "hoonywise_gui.ico"
         builder_window.iconbitmap(default=icon_path)
     except Exception as e:
-        logging.warning(f"⚠️ Failed to set taskbar icon: {e}")
+        logger.warning(f"⚠️ Failed to set taskbar icon: {e}")
 
     tk.Label(builder_window, text="Enter SQL to turn into a view:", font=("Arial", 11, "bold")).pack(pady=(10, 5))
 

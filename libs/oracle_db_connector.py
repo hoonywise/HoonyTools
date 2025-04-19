@@ -1,5 +1,6 @@
 import oracledb
 import logging
+import tkinter as tk
 from tkinter import Tk, simpledialog, messagebox
 import threading
 from libs import session
@@ -36,6 +37,10 @@ def _show_login_dialog(hardcoded_user=None, hardcoded_dsn="DWHDB_DB"):
     from config import ASSETS_PATH
     import tkinter as tk
     from tkinter import messagebox, Toplevel
+    
+    config_path = BASE_PATH / "libs" / "config.ini"
+    config = ConfigParser()
+    config.read(config_path)    
 
     # ❌ DO NOT create hidden_root — let launcher_gui own the icon
     login_window = Toplevel()
@@ -79,6 +84,35 @@ def _show_login_dialog(hardcoded_user=None, hardcoded_dsn="DWHDB_DB"):
     dsn_entry.grid(row=2, column=1)
     dsn_entry.insert(0, hardcoded_dsn)    
     
+    # Use last saved user if no hardcoded_user is provided
+    if hardcoded_user:
+        user_key = hardcoded_user.strip().lower()
+    else:
+        # Try to find a non-DWH section with a saved login
+        non_dwh_sections = [s for s in config.sections() if s != "dwh"]
+        user_key = non_dwh_sections[0] if non_dwh_sections else ""
+
+    saved_username = user_key
+    saved_pwd = ""
+    saved_dsn = hardcoded_dsn
+
+    if user_key and config.has_section(user_key):
+        saved_username = config[user_key].get("username", user_key)
+        saved_pwd = config[user_key].get("password", "")
+        saved_dsn = config[user_key].get("dsn", hardcoded_dsn)
+
+    username_entry.delete(0, tk.END)
+    username_entry.insert(0, saved_username)
+    password_entry.delete(0, tk.END)
+    password_entry.insert(0, saved_pwd)
+    dsn_entry.delete(0, tk.END)
+    dsn_entry.insert(0, saved_dsn)
+
+    # ✅ Save password checkbox (checked if password exists)
+    save_pw_var = tk.BooleanVar(value=bool(saved_pwd))
+    save_pw_check = tk.Checkbutton(frame, text="Save password", variable=save_pw_var)
+    save_pw_check.grid(row=3, columnspan=2, pady=(5, 5), sticky="w")
+    
     if username_entry.get().strip().lower() == "dwh":
         password_entry.focus()  # ✅ Focus password if user is DWH
     else:
@@ -96,8 +130,30 @@ def _show_login_dialog(hardcoded_user=None, hardcoded_dsn="DWHDB_DB"):
             result.update({
                 "username": user,
                 "password": pwd,
-                "dsn": dsn
+                "dsn": dsn,
+                "save": save_pw_var.get()  # ⬅️ this is the key
             })
+
+            # Save config.ini if checkbox is checked
+            section_name = user.lower()
+
+            if save_pw_var.get():
+                config[section_name] = {
+                    "username": user,
+                    "password": pwd,
+                    "dsn": dsn
+                }
+                logger.info(f"💾 Saved credentials for {user} to config.ini")
+            else:
+                if config.has_section(section_name):
+                    config.remove_section(section_name)
+                    logger.info(f"🧹 Removed saved credentials for {user} from config.ini")
+
+            # Always write updated config
+            config_path.parent.mkdir(parents=True, exist_ok=True)
+            with open(config_path, "w") as f:
+                config.write(f)
+
             login_window.destroy()
         else:
             messagebox.showerror("Error", "Username, password, and DSN are all required.")
@@ -106,7 +162,7 @@ def _show_login_dialog(hardcoded_user=None, hardcoded_dsn="DWHDB_DB"):
         login_window.destroy()
 
     btn_frame = tk.Frame(frame, pady=10)
-    btn_frame.grid(row=3, columnspan=2)
+    btn_frame.grid(row=4, columnspan=2)
     tk.Button(btn_frame, text="Login", command=submit, width=10).pack(side="left", padx=5)
     tk.Button(btn_frame, text="Cancel", command=cancel, width=10).pack(side="left", padx=5)
 
@@ -121,54 +177,68 @@ def prompt_credentials(hardcoded_user=None, hardcoded_dsn="DWHDB_DB"):
     show_error_safe("Thread Error", "❌ Login prompt must be called from the main thread.")
     return None
 
-def get_db_connection(force_shared=False):
+def get_db_connection(force_shared=False, root=None):
     try:
         oracledb.init_oracle_client()
         logger.info("✅ Oracle client initialized (Thick mode if available)")
     except Exception:
         logger.info("ℹ️ Proceeding with Thin mode")    
-
+    config_path = BASE_PATH / "libs" / "config.ini"
     try:
         creds = None
 
         if force_shared:
-            from configparser import ConfigParser
-            from config import PROJECT_PATH as BASE_PATH
 
-            config_path = BASE_PATH / "libs" / "config.ini"
-            config = ConfigParser()
-            config.read(config_path)
-
-            if not config.has_section("dwh"):
-                logger.info("ℹ️ No 'dwh' section found in config.ini. Prompting for credentials...")
-                from .oracle_db_connector import prompt_credentials
-
-                # ✅ Replace this inside force_shared block
-                creds_temp = prompt_credentials(
-                    hardcoded_user="dwh",
-                    hardcoded_dsn="DWHDB_DB"
-                )
+            if (
+                not session.stored_credentials
+                or session.stored_credentials.get("username", "").lower() != "dwh"
+                or not session.stored_credentials.get("save", False)
+            ):
+                if root:
+                    result_holder = {}
+                    def ask_login():
+                        result_holder["creds"] = prompt_credentials(hardcoded_user="dwh", hardcoded_dsn="DWHDB_DB")
+                    root.after(0, ask_login)
+                    login_window = tk.Toplevel(root)
+                    login_window.withdraw()  # we just need to wait on something
+                    login_window.after(100, login_window.destroy)
+                    login_window.wait_window()
+                    creds_temp = result_holder.get("creds")
+                else:
+                    creds_temp = prompt_credentials(hardcoded_user="dwh", hardcoded_dsn="DWHDB_DB")
 
                 if creds_temp:
-                    config["dwh"] = {
-                        "username": "dwh",
-                        "password": creds_temp["password"],
-                        "dsn": creds_temp["dsn"]
-                    }
+                    # always store in memory
+                    session.stored_credentials = creds_temp
 
-                    config_path.parent.mkdir(parents=True, exist_ok=True)
-                    with open(config_path, "w") as f:
-                        config.write(f)
+                    if creds_temp.get("save", False):
+                        config["dwh"] = {
+                            "username": "dwh",
+                            "password": creds_temp["password"],
+                            "dsn": creds_temp["dsn"]
+                        }
 
-                    logger.info("✅ Config saved to config.ini")
+                        config_path.parent.mkdir(parents=True, exist_ok=True)
+                        with open(config_path, "w") as f:
+                            config.write(f)
 
+                        logger.info("💾 Saved DWH credentials to config.ini")
+                    else:
+                        logger.info("🔓 DWH login used but not saved (checkbox unchecked)")
                 else:
-                    show_error_safe("Login Cancelled", "❌ Shared login was not completed.")
                     return None
 
-            section = config["dwh"]
+            # 🧠 Use in-memory session creds if they exist
+            if session.stored_credentials and session.stored_credentials.get("username", "").lower() == "dwh":
+                section = session.stored_credentials
+            elif config.has_section("dwh"):
+                section = config["dwh"]
+            else:
+                show_error_safe("Config Error", "❌ Missing [dwh] section in config.ini. Please log in again and check 'Save password'.")
+                return None
+
             if not section.get("username") or not section.get("password") or not section.get("dsn"):
-                show_error_safe("Config Error", "❌ Missing values in 'dwh' config section. Please ensure username, password, and dsn are set.")
+                show_error_safe("Config Error", "❌ Incomplete DWH credentials in config.ini. Please ensure username, password, and DSN are saved.")
                 return None
 
             creds = {

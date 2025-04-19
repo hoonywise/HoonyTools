@@ -126,7 +126,9 @@ def process_latest_files(latest_path, acyr, conn, cursor):
 
 
 def run_scff_loader(existing_conn=None):
-    conn = existing_conn or get_db_connection(force_shared=True)
+    from tkinter import _default_root
+    conn = existing_conn or get_db_connection(force_shared=True, root=_default_root)
+
     if not conn:
         logger.error("❌ Could not connect to Oracle.")
         return

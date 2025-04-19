@@ -4,6 +4,7 @@ from config import PROJECT_PATH as BASE_PATH
 import oracledb
 import logging
 from tkinter import Toplevel, Label, Checkbutton, IntVar, Button, messagebox, simpledialog, Frame, Canvas, Scrollbar, VERTICAL, RIGHT, LEFT, Y, BOTH
+from tkinter import _default_root
 from libs.oracle_db_connector import get_db_connection
 
 logger = logging.getLogger(__name__)
@@ -118,7 +119,9 @@ def drop_user_tables():
     if schema_choice is None:
         return
 
-    conn = get_db_connection(force_shared=(schema_choice == "dwh"))
+    from tkinter import _default_root
+    conn = get_db_connection(force_shared=(schema_choice == "dwh"), root=_default_root)
+
     if not conn:
         logger.error("❌ Failed to connect.")
         return
@@ -167,7 +170,7 @@ def drop_user_tables():
     logger.info("✅ Cleanup complete.")
 
 def delete_dwh_rows(table_filter, label, prompt_label, parent_window=None):
-    conn = get_db_connection(force_shared=True)
+    conn = get_db_connection(force_shared=True, root=_default_root)
     if not conn:
         logger.error("❌ Failed to connect to DWH.")
         return
