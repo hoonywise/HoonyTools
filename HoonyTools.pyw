@@ -414,8 +414,11 @@ def launch_tool_gui():
     stream_handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
     
     # File handler
-    file_handler = logging.FileHandler("Z:/HoonyTools/HoonyTools.log")
+    log_file = base_path / "HoonyTools.log"
+    log_file.parent.mkdir(parents=True, exist_ok=True)
+    file_handler = logging.FileHandler(log_file)
     file_handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
+
 
     # Reset handlers to avoid duplicates
     logger.handlers.clear()
