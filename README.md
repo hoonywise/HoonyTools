@@ -25,7 +25,7 @@ With built-in support for SCFF, MIS, Excel, and CSV formats, and customizable da
 
 ### Python Required (No EXE)
 
-HoonyTools now runs directly as a Python GUI app — no installation or EXE needed.
+HoonyTools now runs directly as a Python GUI app — just unzip and run pyw.
 
 **First-Time Setup:**
 
@@ -35,9 +35,9 @@ HoonyTools now runs directly as a Python GUI app — no installation or EXE need
    ```
    pip install -r requirements.txt
    ```
-4. Launch the app by double-clicking `run.bat` or running:
+4. Launch the app by double-clicking `HoonyTools.pyw' or running:
    ```
-   pythonw launcher_gui.pyw
+   python HoonyTools.pyw
    ```
 
 ✅ This launches the GUI with **no terminal window**
@@ -52,7 +52,7 @@ After unzipping `HoonyTools_v1.0.2_python.zip`, you should see:
 HoonyTools/
 ├── HoonyTools.pyw         # Main launcher (double-click this)
 ├── config.py              # Handles path logic
-├── setup_config.py        # One-time setup script for DWH login
+├── setup_config.py        # Setup script for DWH login
 ├── README.txt             # Windows user guide
 ├── README.md              # This file (GitHub format)
 ├── LICENSE.md             # Licensing terms
@@ -72,8 +72,6 @@ HoonyTools/
 └── MIS/
     └── .dat input files   # Place your MIS .dat files here
 ```
-
-Optional: Run `setup_config.py` to securely generate your Oracle DWH login config on first launch.
 
 ---
 

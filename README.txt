@@ -14,7 +14,7 @@ https://github.com/hoonywise/HoonyTools
 ----------------------------------------
 🚀 FIRST-TIME SETUP
 ----------------------------------------
-1. Open Command Prompt in this folder
+1. Open Command Prompt in HoonyTools folder
 2. Run:
    pip install -r requirements.txt
 
@@ -23,12 +23,12 @@ Only required once per machine
 ----------------------------------------
 ▶️ TO RUN
 ----------------------------------------
-- Double-click: `run.bat`  
+- Double-click: `HoonyTools.pyw`  
   (No terminal window will appear)
 
 OR
 
-- Right-click `launcher_gui.pyw` → Open with → Python (no console)
+- python HoonyTools.pyw
 
 ----------------------------------------
 📦 TOOLS INCLUDED
