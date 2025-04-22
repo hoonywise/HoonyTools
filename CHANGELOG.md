@@ -4,6 +4,34 @@ All notable changes to **HoonyTools** will be documented in this file.
 
 ---
 
+## 🔖 v1.1.1 — Credential Isolation Update (2025-04-21)
+
+This release completes a foundational enhancement for multi-schema workflows across all HoonyTools utilities.
+
+### Enhancements
+
+- **Session memory now isolates credentials for DWH and user schema logins**
+  - Prevents accidental schema switching when tools are used in mixed order
+  - Supports seamless switching between user and DWH tools during the same session
+- `session.user_credentials` and `session.dwh_credentials` now independently store logins
+- `session.stored_credentials` is used only for displaying the current active user in the footer
+
+### Technical Details
+
+- Refactored `get_db_connection()` in `oracle_db_connector.py` to ensure:
+  - `force_shared=True` always uses `session.dwh_credentials`
+  - `force_shared=False` always uses `session.user_credentials`
+  - Config saving logic is respected per schema and optional per login
+- All tools already support schema-scoped connections and require no modification
+
+### Tested Scenarios
+
+- Skipping login at launch, using DWH tool first, then switching to user schema — works correctly
+- Save password on either schema — isolated and respected
+- UI and credential status display behave as expected
+
+---
+
 ## 🚀 v1.1.0 – Login System Overhaul, Thread Safety, and Versioned Packaging
 
 This milestone release introduces a secure and consistent login flow, thread-safe execution, session-based memory, and a modernized build system with versioned output.

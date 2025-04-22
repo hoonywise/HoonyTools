@@ -190,9 +190,9 @@ def get_db_connection(force_shared=False, root=None):
         if force_shared:
 
             if (
-                not session.stored_credentials
-                or session.stored_credentials.get("username", "").lower() != "dwh"
-                or not session.stored_credentials.get("save", False)
+                not session.dwh_credentials
+                or session.dwh_credentials.get("username", "").lower() != "dwh"
+                or not session.dwh_credentials.get("save", False)
             ):
                 if root:
                     result_holder = {}
@@ -208,7 +208,7 @@ def get_db_connection(force_shared=False, root=None):
                     creds_temp = prompt_credentials(hardcoded_user="dwh", hardcoded_dsn="DWHDB_DB")
 
                 if creds_temp:
-                    # always store in memory
+                    session.dwh_credentials = creds_temp
                     session.stored_credentials = creds_temp
 
                     if creds_temp.get("save", False):
@@ -229,8 +229,8 @@ def get_db_connection(force_shared=False, root=None):
                     return None
 
             # 🧠 Use in-memory session creds if they exist
-            if session.stored_credentials and session.stored_credentials.get("username", "").lower() == "dwh":
-                section = session.stored_credentials
+            if session.dwh_credentials:
+                section = session.dwh_credentials
             elif config.has_section("dwh"):
                 section = config["dwh"]
             else:
@@ -248,17 +248,18 @@ def get_db_connection(force_shared=False, root=None):
             }
 
         else:
-            if not session.stored_credentials:
+            if not session.user_credentials:
                 if threading.current_thread() is not threading.main_thread():
                     show_error_safe("Thread Error", "❌ Cannot prompt for login from a background thread.")
                     return None
-                session.stored_credentials = prompt_credentials()
+                session.user_credentials = prompt_credentials()
+                session.stored_credentials = session.user_credentials
 
-            if not session.stored_credentials:
+            if not session.user_credentials:
                 logger.warning("❌ Oracle login was not completed.")
                 return None
 
-            creds = session.stored_credentials
+            creds = session.user_credentials
 
         if not creds:
             logger.warning("❌ Oracle login cancelled or config is missing.")
