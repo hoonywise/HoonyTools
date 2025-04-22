@@ -12,6 +12,9 @@ import pystray
 from pystray import MenuItem as item
 import json
 import random
+import webbrowser
+
+APP_VERSION = "1.1.1"
 
 # Safely climb until we find the project root folder
 project_name = "HoonyTools"
@@ -217,11 +220,21 @@ def show_splash():
         tk.Label(splash, text="HoonyTools Launcher", font=("Arial", 18, "bold")).pack(pady=(40, 10))
 
     # === Created by hoonywise ===
-    creator_label = tk.Label(splash, text="Created by hoonywise", font=("Arial", 10, "italic"), fg="#444444")
-    creator_label.pack(side="bottom", pady=20)
-    license_label = tk.Label(splash, text="For enterprise use, contact: hoonywise@proton.me", font=("Arial", 8, "italic"), fg="#444444")
-    license_label.pack(side="bottom", pady=(0, 5))    
-    creator_label.attributes = {"opacity_step": 0}
+    footer_top = tk.Label(
+        splash,
+        text="Created by hoonywise · hoonywise@proton.me",
+        font=("Arial", 9, "italic"),
+        fg="#444444"
+    )
+    footer_top.pack(side="bottom", pady=(0, 2))
+
+    footer_version = tk.Label(
+        splash,
+        text=f"v{APP_VERSION}",
+        font=("Arial", 9, "bold"),
+        fg="#444444"
+    )
+    footer_version.pack(side="bottom", pady=(0, 12))
 
     def fade_in(alpha=0.0):
         if alpha < 1.0:
@@ -469,6 +482,40 @@ def launch_tool_gui():
         traceback.print_exception(type, value, tb)
 
     sys.excepthook = excepthook    
+    
+    def show_about_popup():
+        from tkinter import messagebox
+        messagebox.showinfo(
+            "About HoonyTools",
+            f"HoonyTools v{APP_VERSION}\n\nCreated by hoonywise\n\nFor enterprise use, contact hoonywise@proton.me"
+        )
+
+    # Add menu bar with "Help > About"
+    menu_bar = tk.Menu(
+        root,
+        bg="#d0d0d0",                # darker gray for menu bar
+        fg="black",
+        activebackground="#ffffff",  # white hover for dropdown
+        activeforeground="black"
+    )
+    
+    help_menu = tk.Menu(
+        menu_bar,
+        tearoff=0,
+        bg="#ffffff",                # white dropdown
+        fg="black",
+        activebackground="#d0d0d0",  # light gray hover
+        activeforeground="black"
+    )
+    
+    help_menu.add_command(label="About", command=show_about_popup)
+    help_menu.add_command(
+        label="Check for Updates",
+        command=lambda: webbrowser.open("https://github.com/hoonywise/HoonyTools/releases")
+    )
+    menu_bar.add_cascade(label="Help", menu=help_menu, underline=0)
+    root.config(menu=menu_bar)    
+    tk.Frame(root, height=1, bg="#b0b0b0").pack(fill="x")
         
     root.mainloop()
 

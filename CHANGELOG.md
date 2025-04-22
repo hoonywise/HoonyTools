@@ -30,6 +30,12 @@ This release completes a foundational enhancement for multi-schema workflows acr
 - Save password on either schema — isolated and respected
 - UI and credential status display behave as expected
 
+### UI Enhancements
+
+- Added **"Check for Updates"** menu item under Help, linking to the GitHub Releases page
+- Cleaned up the **About HoonyTools** popup (removed internal dev notes for a cleaner look)
+- Confirmed keyboard shortcut **Alt + H** works to access Help menu (underline behavior is system-controlled)
+
 ---
 
 ## 🚀 v1.1.0 – Login System Overhaul, Thread Safety, and Versioned Packaging
