@@ -56,3 +56,5 @@ venv/
 test_sql/
 test_exe/
 test_zip/
+# Local Pyright config (pyright-lsp) - not committed to team repo
+pyrightconfig.json
